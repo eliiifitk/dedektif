@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sembol Dedektifi</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mavi: #1a73e8;
+    --koyu-mavi: #0d47a1;
+    --acik-mavi: #e8f0fe;
+    --kirmizi: #e53935;
+    --yesil: #43a047;
+    --turuncu: #fb8c00;
+    --mor: #8e24aa;
+    --bg: #f0f4ff;
+    --kart: #ffffff;
+    --golge: 0 4px 24px rgba(26,115,232,0.13);
+    --golge-buyuk: 0 8px 40px rgba(26,115,232,0.18);
+    --radius: 20px;
+    --font-bas: 'Baloo 2', cursive;
+    --font-govde: 'Nunito', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-govde);
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── ARKA PLAN DESENI ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(26,115,232,0.07) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(142,36,170,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(67,160,71,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── EKRANLAR ─── */
+  .ekran {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 24px 16px;
+    animation: fadeIn 0.35s ease;
+  }
+  .ekran.aktif { display: flex; flex-direction: column; align-items: center; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── ANA MENÜ ─── */
+  .logo-alan {
+    margin-top: 32px;
+    text-align: center;
+  }
+  .logo-ikon {
+    width: 110px; height: 110px;
+    background: var(--mavi);
+    border-radius: 32px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+    box-shadow: var(--golge-buyuk);
+    font-size: 56px;
+  }
+  .logo-baslik {
+    font-family: var(--font-bas);
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--koyu-mavi);
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .logo-alt {
+    font-size: 15px;
+    color: #6b7a99;
+    margin-top: 6px;
+    font-weight: 700;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 44px;
+  }
+  .menu-kart {
+    background: var(--kart);
+    border-radius: var(--radius);
+    padding: 28px 12px 22px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: var(--golge);
+    border: 2.5px solid transparent;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    user-select: none;
+  }
+  .menu-kart:hover, .menu-kart:active {
+    transform: translateY(-5px) scale(1.04);
+    box-shadow: var(--golge-buyuk);
+  }
+  .menu-kart.turuncu { border-color: #ffcc02; }
+  .menu-kart.mavi    { border-color: var(--mavi); }
+  .menu-kart.mor     { border-color: var(--mor); }
+  .menu-kart-ikon { font-size: 40px; margin-bottom: 10px; }
+  .menu-kart-yazi {
+    font-family: var(--font-bas);
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  /* ─── GERİ BUTONU ─── */
+  .geri-btn {
+    align-self: flex-start;
+    background: var(--kart);
+    border: none;
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-family: var(--font-govde);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--mavi);
+    cursor: pointer;
+    box-shadow: var(--golge);
+    display: flex; align-items: center; gap: 6px;
+    transition: transform 0.15s;
+    margin-bottom: 20px;
+  }
+  .geri-btn:hover { transform: translateX(-3px); }
+
+  /* ─── BÖLÜM BAŞLIĞI ─── */
+  .bolum-baslik {
+    font-family: var(--font-bas);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--koyu-mavi);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  /* ─── FLASHCARD ─── */
+  .fc-kart {
+    background: var(--kart);
+    border-radius: 28px;
+    box-shadow: var(--golge-buyuk);
+    padding: 32px 24px 28px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    position: relative;
+  }
+  .fc-sayac {
+    position: absolute;
+    top: 16px; right: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #9aa5c0;
+    font-family: var(--font-bas);
+  }
+  .fc-levha-alan {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 180px;
+    margin-bottom: 20px;
+  }
+  .fc-levha-adi {
+    font-family: var(--font-bas);
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1f36;
+    margin-bottom: 12px;
+  }
+  .fc-levha-aciklama {
+    font-size: 14px;
+    color: #5a6880;
+    line-height: 1.65;
+  }
+  .fc-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    gap: 12px;
+  }
+  .nav-btn {
+    background: var(--acik-mavi);
+    border: none;
+    border-radius: 14px;
+    width: 52px; height: 52px;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--mavi);
+    font-weight: 900;
+    transition: background 0.15s, transform 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-btn:hover { background: var(--mavi); color: #fff; transform: scale(1.08); }
+  .fc-dots {
+    display: flex; gap: 6px;
+  }
+  .fc-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #d0d9ef;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .fc-dot.aktif { background: var(--mavi); transform: scale(1.3); }
+
+  /* ─── LEVHA SVG RENDER ─── */
+  .levha-svg-wrap { display: flex; justify-content: center; align-items: center; }
+
+  /* ─── ATÖLYE ─── */
+  .atolye-wrapper {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .gorev-kutu {
+    background: var(--koyu-mavi);
+    color: #fff;
+    border-radius: 16px;
+    padding: 14px 18px;
+    font-family: var(--font-bas);
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .onizleme-alan {
+    background: var(--kart);
+    border-radius: 22px;
+    box-shadow: var(--golge);
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 160px;
+  }
+  .secim-panel {
+    background: var(--kart);
+    border-radius: 22px;
+    box-shadow: var(--golge);
+    padding: 18px;
+  }
+  .secim-baslik {
+    font-size: 12px;
+    font-weight: 900;
+    color: #9aa5c0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .sekil-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .sekil-btn {
+    background: #f0f4ff;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #4a5580;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--font-govde);
+  }
+  .sekil-btn.aktif {
+    background: var(--acik-mavi);
+    border-color: var(--mavi);
+    color: var(--mavi);
+  }
+  .sembol-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 14px;
+    padding-right: 4px;
+  }
+  .sembol-grid::-webkit-scrollbar { width: 4px; }
+  .sembol-grid::-webkit-scrollbar-track { background: #f0f4ff; border-radius: 4px; }
+  .sembol-grid::-webkit-scrollbar-thumb { background: #c0ccf0; border-radius: 4px; }
+  .sembol-btn {
+    background: #f0f4ff;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #4a5580;
+    text-align: left;
+    transition: all 0.15s;
+    font-family: var(--font-govde);
+  }
+  .sembol-btn.aktif {
+    background: var(--acik-mavi);
+    border-color: var(--mavi);
+    color: var(--mavi);
+  }
+  .cizgi-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #4a5580;
+    cursor: pointer;
+  }
+  .toggle-switch {
+    width: 44px; height: 24px;
+    background: #d0d9ef;
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    flex-shrink: 0;
+  }
+  .toggle-switch.aktif { background: var(--kirmizi); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .toggle-switch.aktif::after { left: 23px; }
+
+  .kontrol-btn {
+    width: 100%;
+    background: var(--yesil);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    font-family: var(--font-bas);
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(67,160,71,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .kontrol-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(67,160,71,0.45); }
+  .kontrol-btn:active { transform: scale(0.97); }
+
+  /* ─── FEEDBACK TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--kart);
+    border-radius: 18px;
+    padding: 14px 28px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    font-family: var(--font-bas);
+    font-size: 16px;
+    font-weight: 700;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap;
+  }
+  .toast.goster { transform: translateX(-50%) translateY(0); }
+  .toast.basari { color: var(--yesil); border: 2px solid var(--yesil); }
+  .toast.hata   { color: var(--kirmizi); border: 2px solid var(--kirmizi); }
+
+  /* ─── VİDEO ─── */
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .video-kart {
+    background: var(--kart);
+    border-radius: 18px;
+    box-shadow: var(--golge);
+    padding: 22px 12px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s;
+    text-decoration: none;
+    display: block;
+    border: 2px solid transparent;
+  }
+  .video-kart:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--golge-buyuk);
+    border-color: var(--mor);
+  }
+  .video-ikon { font-size: 38px; margin-bottom: 8px; }
+  .video-baslik {
+    font-family: var(--font-bas);
+    font-size: 13px;
+    font-weight: 800;
+    color: #1a1f36;
+    margin-bottom: 4px;
+  }
+  .video-alt {
+    font-size: 11px;
+    color: #9aa5c0;
+    font-weight: 700;
+  }
+
+  /* ─── İLERLEME ÇUBUĞU ─── */
+  .ilerleme-wrap {
+    width: 100%;
+    max-width: 380px;
+    background: #e0e8ff;
+    border-radius: 8px;
+    height: 6px;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .ilerleme-bar {
+    height: 100%;
+    background: var(--mavi);
+    border-radius: 8px;
+    transition: width 0.4s ease;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 380px) {
+    .menu-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .menu-kart { padding: 20px 8px 16px; }
+    .menu-kart-ikon { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ ANA MENÜ ════════════════ -->
+<div id="ekran-menu" class="ekran aktif">
+  <div class="logo-alan">
+    <div class="logo-ikon">🔍</div>
+    <div class="logo-baslik">Sembol<br>Dedektifi</div>
+    <div class="logo-alt">Trafik İşaretleri Öğreniyorum</div>
+  </div>
+  <div class="menu-grid">
+    <div class="menu-kart turuncu" onclick="goster('flashcard')">
+      <div class="menu-kart-ikon">🃏</div>
+      <div class="menu-kart-yazi">Flashcard</div>
+    </div>
+    <div class="menu-kart mavi" onclick="goster('atolye')">
+      <div class="menu-kart-ikon">🔨</div>
+      <div class="menu-kart-yazi">Atölye</div>
+    </div>
+    <div class="menu-kart mor" onclick="goster('video')">
+      <div class="menu-kart-ikon">▶️</div>
+      <div class="menu-kart-yazi">Videolar</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ FLASHCARD ════════════════ -->
+<div id="ekran-flashcard" class="ekran">
+  <button class="geri-btn" onclick="goster('menu')">← Ana Menü</button>
+  <div class="bolum-baslik">📚 Flashcard</div>
+  <div class="ilerleme-wrap"><div class="ilerleme-bar" id="fc-ilerleme"></div></div>
+  <div class="fc-kart">
+    <div class="fc-sayac" id="fc-sayac"></div>
+    <div class="fc-levha-alan" id="fc-levha-alan"></div>
+    <div class="fc-levha-adi" id="fc-ad"></div>
+    <div class="fc-levha-aciklama" id="fc-aciklama"></div>
+    <div class="fc-nav">
+      <button class="nav-btn" onclick="fcGit(-1)">‹</button>
+      <div class="fc-dots" id="fc-dots"></div>
+      <button class="nav-btn" onclick="fcGit(1)">›</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ ATÖLYE ════════════════ -->
+<div id="ekran-atolye" class="ekran">
+  <button class="geri-btn" onclick="goster('menu')">← Ana Menü</button>
+  <div class="bolum-baslik">🔨 Atölye</div>
+  <div class="atolye-wrapper">
+    <div class="gorev-kutu" id="gorev-text">GÖREV yükleniyor...</div>
+    <div class="onizleme-alan" id="onizleme-alan">
+      <span style="color:#9aa5c0;font-style:italic;font-size:14px">Buraya inşa et!</span>
+    </div>
+    <div class="secim-panel">
+      <div class="secim-baslik">Şekil Seç</div>
+      <div class="sekil-grid">
+        <button class="sekil-btn" data-sekil="ucgen"    onclick="sekilSec(this)">▲ Üçgen</button>
+        <button class="sekil-btn" data-sekil="daire"    onclick="sekilSec(this)">● Daire</button>
+        <button class="sekil-btn" data-sekil="kare"     onclick="sekilSec(this)">■ Kare</button>
+        <button class="sekil-btn" data-sekil="sekizgen" onclick="sekilSec(this)">⬡ Sekizgen</button>
+      </div>
+      <div class="secim-baslik">Sembol Seç</div>
+      <div class="sembol-grid" id="sembol-grid"></div>
+      <label class="cizgi-toggle" onclick="cizgiToggle()">
+        <button class="toggle-switch" id="cizgi-toggle-btn"></button>
+        Kırmızı Yasak Çizgisi
+      </label>
+      <button class="kontrol-btn" onclick="kontrolEt()">✔ KONTROL ET</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ VİDEO ════════════════ -->
+<div id="ekran-video" class="ekran">
+  <button class="geri-btn" onclick="goster('menu')">← Ana Menü</button>
+  <div class="bolum-baslik">▶ Videolar</div>
+  <div class="video-grid" id="video-grid"></div>
+</div>
+
+<!-- ════════════════ TOAST ════════════════ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  VERİ
+// ══════════════════════════════════════════════════════
+const LEVHALAR = [
+  { ad:"Okul Geçidi", aciklama:"Bu bölgede bir okul olduğunu ve yola aniden çocukların çıkabileceğini bildirir. Sürücülerin hızlarını azaltmaları ve öğrencilere öncelik tanımaları gerektiğini hatırlatır.", sekil:"ucgen", sembol:"okulCocuk", cizgi:false },
+  { ad:"Yaya Geçidi (Uyarı)", aciklama:"Yayaların güvenle karşıdan karşıya geçebilmesi için ayrılmış özel alanı belirtir. Sürücülerin bu bölgede hızlarını azaltmaları ve yayalara ilk geçiş hakkını vermeleri gerektiğini hatırlatır.", sekil:"ucgen", sembol:"yayaUyari", cizgi:false },
+  { ad:"Işıklı İşaret Cihazı", aciklama:"Trafik akışını düzenlemek için kullanılan, kırmızı, sarı ve yeşil ışıklardan oluşan cihazdır. Kırmızı 'dur', sarı 'hazırlan', yeşil ise 'geç' anlamına gelir.", sekil:"ucgen", sembol:"trafiklambasi", cizgi:false },
+  { ad:"Bisiklet Geçebilir", aciklama:"Bu yolun bisiklet trafiğine ayrıldığını veya bu noktadan bisikletlilerin geçebileceğini bildirir. Sürücülerin bu bölgede bisikletli sürücülere karşı daha dikkatli olmaları gerektiğini hatırlatır.", sekil:"ucgen", sembol:"bisikletUyari", cizgi:false },
+  { ad:"Dikkat", aciklama:"Bu işaret genel bir uyarı levhasıdır; yolun ilerisinde sürücülerin dikkat etmesi gereken bir tehlike veya özel bir durum olduğunu belirtir.", sekil:"ucgen", sembol:"unlem", cizgi:false },
+  { ad:"Yolda Çalışma", aciklama:"İleride yol yapım, bakım veya onarım çalışması yapıldığını bildirir. Sürücülerin bu bölgede hızlarını düşürmeleri ve çalışanların güvenliği için dikkatli seyretmeleri gerektiğini hatırlatır.", sekil:"ucgen", sembol:"isci", cizgi:false },
+  { ad:"Kaygan Yol", aciklama:"Yol yüzeyinin kaygan olabileceğini; özellikle yağışlı, buzlu veya kar yağışı sonrası zeminlerin araçların yol tutuşunu zorlaştıracağını bildirir.", sekil:"ucgen", sembol:"kayganArac", cizgi:false },
+  { ad:"DUR", aciklama:"Bu işaret, sürücülerin trafik durumuna bakılmaksızın dur çizgisi hizasında mutlaka tam olarak durmaları gerektiğini belirtir. Trafik güvenliği için en önemli işarettir.", sekil:"sekizgen", sembol:"DUR", cizgi:false },
+  { ad:"Girişi Olmayan Yol", aciklama:"Bu yola taşıt girişinin kesinlikle yasak olduğunu bildirir. Genellikle tek yönlü yolların ters giriş noktalarında kullanılır.", sekil:"daire", sembol:"girisYok", cizgi:false },
+  { ad:"Taşıt Trafiğine Kapalı Yol", aciklama:"Bu yola motorlu veya motorsuz hiçbir taşıtın girmesinin yasak olduğunu belirtir. Genellikle yaya bölgeleri veya araç girişine kapalı alanlarda kullanılır.", sekil:"daire", sembol:"bos", cizgi:false },
+  { ad:"Yaya Giremez", aciklama:"Yayaların bu bölgeye girişinin yasak olduğunu belirtir. Genellikle motorlu taşıt trafiğinin yoğun olduğu veya yayalar için tehlike oluşturabilecek alanlarda kullanılır.", sekil:"daire", sembol:"yayaGiremez", cizgi:true },
+  { ad:"Bisiklet Giremez", aciklama:"Bisikletlerin bu yola girmesinin yasak olduğunu bildirir. Trafik akışının bisikletliler için riskli olabileceği durumlarda veya otoyol gibi bisiklet kullanımına uygun olmayan yerlerde kullanılır.", sekil:"daire", sembol:"bisikletGiremez", cizgi:true },
+  { ad:"Hız Sınırı (50)", aciklama:"Sürücülerin bu bölgede hızlarını saatte en fazla 50 kilometre ile sınırlandırmaları gerektiğini bildirir.", sekil:"daire", sembol:"hiz50", cizgi:false },
+  { ad:"Sağa/Sola Dönülmez", aciklama:"Bu kavşaktan veya yoldan sağa ya da sola dönüş yapmanın yasak olduğunu bildirir. Sürücülerin trafik kurallarına uyarak alternatif yolları kullanmaları gerektiğini hatırlatır.", sekil:"daire", sembol:"donulmez", cizgi:true },
+  { ad:"Yaya Geçidi (Bilgi)", aciklama:"Yayaların güvenle karşıdan karşıya geçebilmesi için ayrılmış özel alanı belirtir. Mavi zemin üzerindeki işaret yayalar için güvenli geçiş noktasını gösterir.", sekil:"kare", sembol:"yayaBilgi", cizgi:false },
+  { ad:"Hastane", aciklama:"Hastane yakınında olduğunuzu bildirir. Sürücülerin bu bölgede korna çalmamaları ve daha dikkatli, yavaş seyretmeleri gerektiğini hatırlatır.", sekil:"kare", sembol:"H", cizgi:false },
+  { ad:"Durak", aciklama:"Toplu taşıma araçlarının yolcu indirme-bindirme yaptığı alanı gösterir. Sürücülerin bu alanı işgal etmemeleri gerektiğini hatırlatır.", sekil:"kare", sembol:"D", cizgi:false },
+  { ad:"İlk Yardım", aciklama:"Acil durumlarda tıbbi yardım alabileceğiniz veya ilk yardım hizmeti sunulan bir noktanın yakın olduğunu gösterir.", sekil:"kare", sembol:"ilkYardim", cizgi:false },
+  { ad:"Engelli Park Yeri", aciklama:"Bu park alanının sadece engelli sürücülerin kullanımına ayrıldığını belirtir. Engeli bulunmayan sürücülerin bu alanı kesinlikle işgal etmemeleri gerektiğini hatırlatır.", sekil:"kare", sembol:"engelli", cizgi:false },
+  { ad:"Tek Yön", aciklama:"Trafiğin sadece işaretin gösterdiği yöne doğru aktığını belirtir. Sürücülerin bu yola ters yönden girmemeleri gerektiğini hatırlatan bir yönlendirme levhasıdır.", sekil:"kare", sembol:"tekYon", cizgi:false },
+];
+
+const SEMBOLLER = [
+  { kod:"okulCocuk",      yazi:"Okul Çocukları" },
+  { kod:"yayaUyari",      yazi:"Yaya (Uyarı)" },
+  { kod:"trafiklambasi",  yazi:"Işıklı İşaret" },
+  { kod:"bisikletUyari",  yazi:"Bisiklet (Uyarı)" },
+  { kod:"unlem",          yazi:"Ünlem (!)" },
+  { kod:"isci",           yazi:"İşçi Figürü" },
+  { kod:"kayganArac",     yazi:"Kaygan Araç" },
+  { kod:"DUR",            yazi:"DUR Yazısı" },
+  { kod:"girisYok",       yazi:"Giriş Yok" },
+  { kod:"bos",            yazi:"Boş" },
+  { kod:"yayaGiremez",    yazi:"Yaya Figürü" },
+  { kod:"bisikletGiremez",yazi:"Bisiklet" },
+  { kod:"hiz50",          yazi:"50 Sayısı" },
+  { kod:"donulmez",       yazi:"Yön Oku" },
+  { kod:"yayaBilgi",      yazi:"Yaya Geçidi" },
+  { kod:"H",              yazi:"H Harfi" },
+  { kod:"D",              yazi:"D Harfi" },
+  { kod:"ilkYardim",      yazi:"Kırmızı Hilal" },
+  { kod:"engelli",        yazi:"Tekerlekli Sandalye" },
+  { kod:"tekYon",         yazi:"Yukarı Ok" },
+];
+
+const VIDEOLAR = [
+  "w3tBck0ipes","Kq8DW2_4MUo","0rkZPT5c7Ug","FPiXwYEK-nc",
+  "Xq6PoCkYgJk","ZXZnW9IgX-A","QSlpGpRbIJ4","18BQ8XTQB34",
+  "aI8tyqrjs9o","3SvBUK8qLkQ"
+];
+
+// ══════════════════════════════════════════════════════
+//  DURUM
+// ══════════════════════════════════════════════════════
+let fcIndex    = 0;
+let gorevIndex = 0;
+let secilenSekil   = "";
+let secilenSembol  = "";
+let secilenCizgi   = false;
+let toastTimer     = null;
+
+// ══════════════════════════════════════════════════════
+//  EKRAN YÖNETİMİ
+// ══════════════════════════════════════════════════════
+function goster(ekran) {
+  document.querySelectorAll('.ekran').forEach(e => e.classList.remove('aktif'));
+  document.getElementById('ekran-' + ekran).classList.add('aktif');
+  if (ekran === 'flashcard') fcBaslat();
+  if (ekran === 'atolye')    atolyeBaslat();
+  if (ekran === 'video')     videoBaslat();
+}
+
+// ══════════════════════════════════════════════════════
+//  FLASHCARD
+// ══════════════════════════════════════════════════════
+function fcBaslat() {
+  fcIndex = 0;
+  fcDotsOlustur();
+  fcGoster();
+}
+
+function fcDotsOlustur() {
+  const wrap = document.getElementById('fc-dots');
+  wrap.innerHTML = '';
+  const goster_sayisi = Math.min(LEVHALAR.length, 7);
+  for (let i = 0; i < goster_sayisi; i++) {
+    const d = document.createElement('div');
+    d.className = 'fc-dot';
+    wrap.appendChild(d);
+  }
+}
+
+function fcGit(yon) {
+  fcIndex = (fcIndex + yon + LEVHALAR.length) % LEVHALAR.length;
+  fcGoster();
+}
+
+function fcGoster() {
+  const l = LEVHALAR[fcIndex];
+  document.getElementById('fc-sayac').textContent    = `${fcIndex + 1} / ${LEVHALAR.length}`;
+  document.getElementById('fc-ad').textContent       = l.ad;
+  document.getElementById('fc-aciklama').textContent = l.aciklama;
+  document.getElementById('fc-levha-alan').innerHTML = levhaSVG(l, 140);
+
+  // dots güncelle
+  const dots = document.querySelectorAll('.fc-dot');
+  const grup = Math.floor(fcIndex / 7) * 7;
+  dots.forEach((d, i) => d.classList.toggle('aktif', grup + i === fcIndex));
+
+  // ilerleme
+  const yuzde = ((fcIndex + 1) / LEVHALAR.length) * 100;
+  document.getElementById('fc-ilerleme').style.width = yuzde + '%';
+}
+
+// ══════════════════════════════════════════════════════
+//  ATÖLYE
+// ══════════════════════════════════════════════════════
+function atolyeBaslat() {
+  secilenSekil  = "";
+  secilenSembol = "";
+  secilenCizgi  = false;
+  document.getElementById('cizgi-toggle-btn').classList.remove('aktif');
+  sembolGridOlustur();
+  gorevGuncelle();
+  onizlemeGuncelle();
+}
+
+function sembolGridOlustur() {
+  const grid = document.getElementById('sembol-grid');
+  grid.innerHTML = '';
+  SEMBOLLER.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'sembol-btn';
+    btn.dataset.sembol = s.kod;
+    btn.textContent = s.yazi;
+    btn.onclick = () => sembolSec(btn);
+    grid.appendChild(btn);
+  });
+}
+
+function gorevGuncelle() {
+  const l = LEVHALAR[gorevIndex];
+  document.getElementById('gorev-text').textContent = `🎯 GÖREV: ${l.ad}`;
+}
+
+function sekilSec(btn) {
+  document.querySelectorAll('.sekil-btn').forEach(b => b.classList.remove('aktif'));
+  btn.classList.add('aktif');
+  secilenSekil = btn.dataset.sekil;
+  onizlemeGuncelle();
+}
+
+function sembolSec(btn) {
+  document.querySelectorAll('.sembol-btn').forEach(b => b.classList.remove('aktif'));
+  btn.classList.add('aktif');
+  secilenSembol = btn.dataset.sembol;
+  onizlemeGuncelle();
+}
+
+function cizgiToggle() {
+  secilenCizgi = !secilenCizgi;
+  document.getElementById('cizgi-toggle-btn').classList.toggle('aktif', secilenCizgi);
+  onizlemeGuncelle();
+}
+
+function onizlemeGuncelle() {
+  const alan = document.getElementById('onizleme-alan');
+  if (!secilenSekil) {
+    alan.innerHTML = '<span style="color:#9aa5c0;font-style:italic;font-size:14px">Önce bir şekil seç!</span>';
+    return;
+  }
+  const gecici = {
+    sekil: secilenSekil,
+    sembol: secilenSembol,
+    cizgi: secilenCizgi,
+    zemin: secilenSekil === 'kare' ? 'mavi' : secilenSekil === 'sekizgen' ? 'kirmizi' : 'beyaz'
+  };
+  alan.innerHTML = levhaSVGOnizleme(gecici, 140);
+}
+
+function kontrolEt() {
+  const hedef = LEVHALAR[gorevIndex];
+  if (secilenSekil  === hedef.sekil &&
+      secilenSembol === hedef.sembol &&
+      secilenCizgi  === hedef.cizgi) {
+    toast("🎉 Harika! Çok doğru bir işaret!", true);
+    setTimeout(() => {
+      gorevIndex = (gorevIndex + 1) % LEVHALAR.length;
+      atolyeBaslat();
+    }, 2200);
+  } else {
+    toast("🔍 Hımm, parçalar pek uymadı. Tekrar dene!", false);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  VİDEO
+// ══════════════════════════════════════════════════════
+function videoBaslat() {
+  const grid = document.getElementById('video-grid');
+  grid.innerHTML = '';
+  VIDEOLAR.forEach((id, i) => {
+    const a = document.createElement('a');
+    a.className = 'video-kart';
+    a.href = `https://www.youtube.com/watch?v=${id}`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.innerHTML = `
+      <div class="video-ikon">▶️</div>
+      <div class="video-baslik">Video ${i + 1}</div>
+      <div class="video-alt">YouTube'da izle</div>
+    `;
+    grid.appendChild(a);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════
+function toast(mesaj, basari) {
+  const el = document.getElementById('toast');
+  el.textContent = mesaj;
+  el.className = 'toast ' + (basari ? 'basari' : 'hata') + ' goster';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('goster'), 2500);
+}
+
+// ══════════════════════════════════════════════════════
+//  LEVHA SVG ÜRETİCİ
+// ══════════════════════════════════════════════════════
+function levhaSVG(levha, boyut) {
+  const z = boyut;
+  return `<svg width="${z}" height="${z}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    ${sekilArkaplan(levha.sekil)}
+    ${sembolIcerik(levha.sembol, levha.sekil)}
+    ${levha.cizgi ? yasakCizgisi() : ''}
+  </svg>`;
+}
+
+function levhaSVGOnizleme(gecici, boyut) {
+  const fakeL = {
+    sekil: gecici.sekil,
+    sembol: gecici.sembol || 'bos',
+    cizgi: gecici.cizgi
+  };
+  return levhaSVG(fakeL, boyut);
+}
+
+function sekilArkaplan(sekil) {
+  if (sekil === 'ucgen') return `
+    <polygon points="100,18 185,165 15,165" fill="#e53935" />
+    <polygon points="100,32 172,158 28,158" fill="white" />`;
+
+  if (sekil === 'daire') return `
+    <circle cx="100" cy="100" r="85" fill="white"/>
+    <circle cx="100" cy="100" r="85" fill="none" stroke="#e53935" stroke-width="14"/>`;
+
+  if (sekil === 'kare') return `
+    <rect x="12" y="12" width="176" height="176" rx="18" fill="#1a73e8"/>
+    <rect x="20" y="20" width="160" height="160" rx="13" fill="none" stroke="white" stroke-width="5"/>`;
+
+  if (sekil === 'sekizgen') return `
+    <polygon points="60,12 140,12 188,60 188,140 140,188 60,188 12,140 12,60" fill="#e53935"/>`;
+
+  return '';
+}
+
+function sembolIcerik(sembol, sekil) {
+  const yOff = sekil === 'ucgen' ? 12 : 0;
+  const merkez = 100;
+  const my = merkez + yOff;
+
+  const svg = {
+    okulCocuk: `<text x="${merkez}" y="${my+10}" font-size="68" text-anchor="middle" dominant-baseline="middle">👨‍👧</text>`,
+    yayaUyari: `<text x="${merkez}" y="${my+8}" font-size="72" text-anchor="middle" dominant-baseline="middle">🚶</text>`,
+    trafiklambasi: `
+      <rect x="82" y="${my-38}" width="36" height="72" rx="8" fill="#222"/>
+      <circle cx="100" cy="${my-22}" r="10" fill="#e53935"/>
+      <circle cx="100" cy="${my}" r="10" fill="#fbc02d"/>
+      <circle cx="100" cy="${my+22}" r="10" fill="#43a047"/>`,
+    bisikletUyari: `<text x="${merkez}" y="${my+8}" font-size="65" text-anchor="middle" dominant-baseline="middle">🚴</text>`,
+    unlem: `<text x="${merkez}" y="${my+14}" font-size="90" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="#1a1a1a" font-family="Arial Black,sans-serif">!</text>`,
+    isci: `<text x="${merkez}" y="${my+8}" font-size="64" text-anchor="middle" dominant-baseline="middle">👷</text>`,
+    kayganArac: `<text x="${merkez}" y="${my+8}" font-size="60" text-anchor="middle" dominant-baseline="middle">🚗</text>
+      <path d="M55,${my+38} Q65,${my+28} 75,${my+38}" stroke="#1a1a1a" stroke-width="3" fill="none"/>
+      <path d="M125,${my+38} Q135,${my+28} 145,${my+38}" stroke="#1a1a1a" stroke-width="3" fill="none"/>`,
+    DUR: `<text x="100" y="115" font-size="54" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Arial Black,sans-serif">DUR</text>`,
+    girisYok: `<rect x="42" y="88" width="116" height="24" rx="4" fill="white"/>`,
+    bos: ``,
+    yayaGiremez: `<text x="${merkez}" y="${my+8}" font-size="72" text-anchor="middle" dominant-baseline="middle">🚶</text>`,
+    bisikletGiremez: `<text x="${merkez}" y="${my+8}" font-size="66" text-anchor="middle" dominant-baseline="middle">🚲</text>`,
+    hiz50: `<text x="100" y="115" font-size="70" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="#1a1a1a" font-family="Arial Black,sans-serif">50</text>`,
+    donulmez: `<text x="${merkez}" y="${my+8}" font-size="70" text-anchor="middle" dominant-baseline="middle">↪</text>`,
+    yayaBilgi: `
+      <polygon points="100,42 165,148 35,148" fill="white"/>
+      <text x="100" y="130" font-size="56" text-anchor="middle" dominant-baseline="middle">🚶</text>`,
+    H: `<text x="100" y="115" font-size="100" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Arial Black,sans-serif">H</text>`,
+    D: `<text x="100" y="115" font-size="100" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="#1a1a1a" font-family="Arial Black,sans-serif">D</text>`,
+    ilkYardim: `
+      <circle cx="108" cy="95" r="34" fill="#e53935"/>
+      <circle cx="90" cy="82" r="28" fill="#1a73e8"/>`,
+    engelli: `<text x="100" y="115" font-size="76" text-anchor="middle" dominant-baseline="middle">♿</text>`,
+    tekYon: `
+      <text x="100" y="105" font-size="64" text-anchor="middle" dominant-baseline="middle" fill="white">↑</text>
+      <text x="100" y="155" font-size="20" font-weight="800" text-anchor="middle" fill="white" font-family="Arial,sans-serif">TEK YÖN</text>`,
+  };
+
+  return svg[sembol] || '';
+}
+
+function yasakCizgisi() {
+  return `<line x1="28" y1="28" x2="172" y2="172" stroke="#e53935" stroke-width="14" stroke-linecap="round"
+    clip-path="url(#daire-clip)"/>
+  <defs><clipPath id="daire-clip"><circle cx="100" cy="100" r="84"/></clipPath></defs>`;
+}
+</script>
+</body>
+</html>
